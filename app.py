@@ -76,10 +76,10 @@ def goal_page(goal):
     return render_template("goal.html", teachers=teachers_show)
 
 
-@app.route("/profiles/<id>/")
-def profile_page(id):
+@app.route("/profiles/<int:teacher_id>/")
+def profile_page(teacher_id):
     for teacher in data["teachers"]:
-        if teacher["id"] == int(id):
+        if teacher["id"] == teacher_id:
             return render_template("profile.html", teacher=teacher, goals=data["goals"], week_days=week_days)
     return render_template("index.html")
 
@@ -112,8 +112,8 @@ def request_done_page():
         return render_template("request.html", form=form)
 
 
-@app.route("/booking/<id>/<day>/<time>/")
-def booking_page(id, day, time):
+@app.route("/booking/<int:booking_id>/<day>/<time>/")
+def booking_page(booking_id, day, time):
     form = BookingForm()
     for key, value in week_days.items():
         if value[0] == day:
@@ -121,9 +121,9 @@ def booking_page(id, day, time):
             form.clientTime.label = value[1]
     form.clientTime.data = time + ":00"
     form.clientTime.label = form.clientTime.label + ", " + form.clientTime.data
-    form.clientTeacher.data = id
+    form.clientTeacher.data = booking_id
     for teacher in data["teachers"]:
-        if id == str(teacher["id"]):
+        if booking_id == teacher["id"]:
             form.clientTeacher.label = teacher["name"]
             picture = teacher["picture"]
     return render_template("booking.html", form=form, picture=picture)
@@ -148,7 +148,6 @@ def booking_done_page():
         return render_template("booking_done.html", booking=new_booking)
     else:
         return render_template("booking.html", form=form)
-
 
 
 if __name__ == '__main__':
