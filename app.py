@@ -1,12 +1,15 @@
-import os
 import json
+import os
 import random
-from flask import Flask, render_template, request
+import sys
+
+from flask import Flask, render_template, request, abort
 from flask_wtf import FlaskForm
-from wtforms import StringField, HiddenField, SelectField, RadioField, IntegerField
+from wtforms import StringField, HiddenField, RadioField, IntegerField
 from wtforms.fields.html5 import TelField
 from wtforms.validators import InputRequired, DataRequired
 from wtforms.widgets import HiddenInput
+from dotenv import load_dotenv
 
 with open('data_file.json', encoding="utf-8") as json_file:
     data = json.load(json_file)
@@ -39,6 +42,14 @@ class RequestForm(FlaskForm):
 
 
 app = Flask(__name__)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+dotenv_path = os.path.join(BASE_DIR, '.env')
+if os.path.exists(dotenv_path):
+    load_dotenv(dotenv_path)
+else:
+    print('".env" is missing.')
+    sys.exit(1)
+
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 
 week_days = {"mon": ["monday", "Понедельник"], "tue": ["tuesday", "Вторник"], "wed": ["wednesday", "Среда"],
@@ -81,6 +92,7 @@ def profile_page(teacher_id):
     for teacher in data["teachers"]:
         if teacher["id"] == teacher_id:
             return render_template("profile.html", teacher=teacher, goals=data["goals"], week_days=week_days)
+    abort(404)
     return render_template("index.html")
 
 
@@ -114,18 +126,26 @@ def request_done_page():
 
 @app.route("/booking/<int:booking_id>/<day>/<time>/")
 def booking_page(booking_id, day, time):
+    abort = True
     form = BookingForm()
     for key, value in week_days.items():
         if value[0] == day:
+            abort = False
             form.clientWeekday.data = key
             form.clientTime.label = value[1]
+    if abort:
+        abort(404)
+    abort = True
     form.clientTime.data = time + ":00"
     form.clientTime.label = form.clientTime.label + ", " + form.clientTime.data
     form.clientTeacher.data = booking_id
     for teacher in data["teachers"]:
         if booking_id == teacher["id"]:
+            abort = False
             form.clientTeacher.label = teacher["name"]
             picture = teacher["picture"]
+    if abort:
+        abort(404)
     return render_template("booking.html", form=form, picture=picture)
 
 
