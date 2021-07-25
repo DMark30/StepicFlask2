@@ -113,7 +113,7 @@ def request_done_page():
                        }
         request_data["requests"].append(new_request)
         with open("request.json", "w", encoding="utf-8") as json_write_file:
-            json.dump(request_data, json_write_file, indent=2)
+            json.dump(request_data, json_write_file, indent=2, ensure_ascii=False)
         value = form.clientHours.data
         choices = dict(form.clientHours.choices)
         label = choices[value]
@@ -161,7 +161,7 @@ def booking_done_page():
                        }
         booking_data["bookings"].append(new_booking)
         with open("booking.json", "w", encoding="utf-8") as json_write_file:
-            json.dump(booking_data, json_write_file, indent=2)
+            json.dump(booking_data, json_write_file, indent=2, ensure_ascii=False)
         for key, value in week_days.items():
             if key == form.clientWeekday.data:
                 new_booking["day"] = value[1] + ", " + form.clientTime.data
